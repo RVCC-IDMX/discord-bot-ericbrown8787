@@ -1,0 +1,20 @@
+{
+  "name": "discord-bot-ericbrown8787",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RVCC-IDMX/discord-bot-ericbrown8787.git"
+  },
+  "keywords": [],
+  "author": "Eric Brown <eric.brown8787@gmail.com> (https://github.com/ericbrown8787)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/RVCC-IDMX/discord-bot-ericbrown8787/issues"
+  },
+  "homepage": "https://github.com/RVCC-IDMX/discord-bot-ericbrown8787#readme"
+}
