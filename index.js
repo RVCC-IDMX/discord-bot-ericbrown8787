@@ -1,8 +1,9 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const {
-  Client, Events, GatewayIntentBits, Collection,
+  Client, Events, GatewayIntentBits, Collection, EmbedBuilder,
 } = require('discord.js');
+const { channel } = require('node:diagnostics_channel');
 const { token } = require('./config.json');
 
 // Create a new client instance
@@ -13,6 +14,7 @@ client.commands = new Collection();
 const commandsPath = path.join(__dirname, 'commands');
 const commandFiles = fs.readdirSync(commandsPath).filter((file) => file.endsWith('.js'));
 
+// Dynamically populate client slash command list with all modules in commands directory
 commandFiles.forEach((file) => {
   const filePath = path.join(commandsPath, file);
   // eslint-disable-next-line import/no-dynamic-require, global-require
@@ -34,7 +36,17 @@ client.once(Events.ClientReady, (c) => {
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {
-  if (!interaction.isChatInputCommand()) return;
+  if (!interaction.isChatInputCommand()) {
+    // Handles clicking button in guide command reply
+    if (interaction.customId === 'primary') {
+      const guideEmbed = new EmbedBuilder()
+        .setTitle('Guide')
+        .setDescription('This is the guide embed')
+        .setTimestamp();
+      await interaction.reply({ embeds: [guideEmbed] });
+    }
+    return;
+  }
 
   const command = interaction.client.commands.get(interaction.commandName);
 
