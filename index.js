@@ -36,13 +36,13 @@ client.once(Events.ClientReady, (c) => {
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {
-  // This block handles any input events that aren't slash commands
+  // The following if block handles any input events that aren't slash commands
   if (!interaction.isChatInputCommand()) {
     // Handles clicking button in guide command reply
     if (interaction.customId === 'primary') {
       const guideEmbed = new EmbedBuilder()
         .setTitle('Guide')
-        .setDescription('Thank you for choosing me over all those other bots out there! \nYou can type / to display the list of available slash commands!')
+        .setDescription('Thank you for choosing me over all of those other bots out there! \nYou can type / to display the list of available slash commands!')
         .setTimestamp();
       await interaction.reply({ embeds: [guideEmbed] });
     }

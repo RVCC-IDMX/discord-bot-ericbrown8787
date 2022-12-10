@@ -19,6 +19,6 @@ module.exports = {
           .setURL('https://github.com/RVCC-IDMX/discord-bot-ericbrown8787')
           .setStyle(ButtonStyle.Link),
       );
-    await interaction.reply({ content: 'I think you should,', components: [row] });
+    await interaction.reply({ content: 'To open the guide, click the blurple button below, or click the gray Link button to visit this project\'s repository on GitHub', components: [row] });
   },
 };
