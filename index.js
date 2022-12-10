@@ -3,7 +3,7 @@ const path = require('node:path');
 const {
   Client, Events, GatewayIntentBits, Collection, EmbedBuilder,
 } = require('discord.js');
-const { channel } = require('node:diagnostics_channel');
+// const { channel } = require('node:diagnostics_channel');
 const { token } = require('./config.json');
 
 // Create a new client instance
@@ -36,18 +36,20 @@ client.once(Events.ClientReady, (c) => {
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {
+  // This block handles any input events that aren't slash commands
   if (!interaction.isChatInputCommand()) {
     // Handles clicking button in guide command reply
     if (interaction.customId === 'primary') {
       const guideEmbed = new EmbedBuilder()
         .setTitle('Guide')
-        .setDescription('This is the guide embed')
+        .setDescription('Thank you for choosing me over all those other bots out there! \nYou can type / to display the list of available slash commands!')
         .setTimestamp();
       await interaction.reply({ embeds: [guideEmbed] });
     }
     return;
   }
 
+  // Do we have a command?
   const command = interaction.client.commands.get(interaction.commandName);
 
   if (!command) {
@@ -62,6 +64,5 @@ client.on(Events.InteractionCreate, async (interaction) => {
     await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
   }
 });
-
 // Log in to Discord with your client's token
 client.login(token);
