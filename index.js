@@ -37,32 +37,44 @@ client.once(Events.ClientReady, (c) => {
 
 client.on(Events.InteractionCreate, async (interaction) => {
   // The following if block handles any input events that aren't slash commands
-  if (!interaction.isChatInputCommand()) {
-    // Handles clicking button in guide command reply
-    if (interaction.customId === 'primary') {
-      const guideEmbed = new EmbedBuilder()
-        .setTitle('Guide')
-        .setDescription('Thank you for choosing me over all of those other bots out there! \nYou can type / to display the list of available slash commands!')
-        .setTimestamp();
-      await interaction.reply({ embeds: [guideEmbed] });
-    }
-    return;
-  }
 
   // Do we have a command?
-  const command = interaction.client.commands.get(interaction.commandName);
 
-  if (!command) {
-    console.error(`No command matching ${interaction.commandName} was found.`);
-    return;
-  }
+  if (interaction.isChatInputCommand()) {
+    const command = interaction.client.commands.get(interaction.commandName);
 
-  try {
-    await command.execute(interaction);
-  } catch (error) {
-    console.error(error);
-    await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+    if (!command) {
+      console.error(`No command matching ${interaction.commandName} was found.`);
+      return;
+    }
+
+    try {
+      await command.execute(interaction);
+    } catch (error) {
+      console.error(error);
+      await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+    }
+  } else if (interaction.isAutocomplete()) {
+    const command = interaction.client.commands.get(interaction.commandName);
+
+    if (!command) {
+      console.error(`No command matching ${interaction.commandName} was found.`);
+      return;
+    }
+
+    try {
+      await command.autocomplete(interaction);
+    } catch (error) {
+      console.error(error);
+    }
+  } else if (interaction.customId === 'primary') {
+    const guideEmbed = new EmbedBuilder()
+      .setTitle('Guide')
+      .setDescription('Thank you for choosing me over all of those other bots out there! \nYou can type / to display the list of available slash commands!')
+      .setTimestamp();
+    await interaction.reply({ embeds: [guideEmbed] });
   }
 });
+
 // Log in to Discord with your client's token
 client.login(token);
