@@ -10,7 +10,7 @@ async function getCowList() {
   const cows = (await cowsay.list(callback)).map((cowfile) => cowfile.split('.')[0]);
   // console.log(cows);
   const test = cows.map((cowFile) => {
-    console.log(cowFile);
+    // console.log(cowFile);
     if (cowFile === 'beavis') {
       // Disabling an ESLint rule here. The name of the beavis file is
       // inconsistent with the rest of Cowsay's naming scheme, causing an error
@@ -29,10 +29,12 @@ async function getCowList() {
     }
   });
   const lengths = test.map((cowfile) => cowfile.length);
+  console.log(lengths);
   let longest = '';
   test.forEach((file) => {
     if (file.length > longest.length) { longest = file; }
   });
+
   // test.forEach((cowFile) => {
   //   if (cowFile === 'beavis') {
   //     // Disabling an ESLint rule here. The name of the beavis file is
@@ -48,5 +50,5 @@ async function getCowList() {
 
   return cows;
 }
-
+// try { cowsay.say({ text: 'meow', f: 'ibm' }); } catch { console.log('meow'); }
 getCowList();

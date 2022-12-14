@@ -36,10 +36,6 @@ client.once(Events.ClientReady, (c) => {
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {
-  // The following if block handles any input events that aren't slash commands
-
-  // Do we have a command?
-
   if (interaction.isChatInputCommand()) {
     const command = interaction.client.commands.get(interaction.commandName);
 
@@ -67,12 +63,21 @@ client.on(Events.InteractionCreate, async (interaction) => {
     } catch (error) {
       console.error(error);
     }
-  } else if (interaction.customId === 'primary') {
+  } else if (interaction.customId === 'primary') { // Responding to button presses
     const guideEmbed = new EmbedBuilder()
       .setTitle('Guide')
       .setDescription('Thank you for choosing me over all of those other bots out there! \nYou can type / to display the list of available slash commands!')
       .setTimestamp();
     await interaction.reply({ embeds: [guideEmbed] });
+  } else if (interaction.customId === 'cowsay-help') {
+    // Help embed for Cowsay
+    const cowList = await interaction.client.commands.get('cowsay').exportCowList();
+    let formattedList = '';
+    cowList.forEach((cow) => { formattedList += `${cow}\n`; });
+    const helpEmbed = new EmbedBuilder()
+      .setTitle('Cow List: ')
+      .setDescription(formattedList);
+    await interaction.reply({ embeds: [helpEmbed], ephemeral: true });
   }
 });
 
