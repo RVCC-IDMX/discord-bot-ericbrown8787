@@ -6,25 +6,31 @@ const cowsay = require('cowsay');
 async function getCowList() {
   function callback(error, names) {
     if (error) {
+      console.error('Cowsay: A request to retrieve the cowlist could not be completed.');
       return ['default'];
     }
     return names;
   }
 
   const cows = await cowsay.list(callback);
-  // Returning the cowfile names as strings, with the 3 files that seem to break cowsay excluded
+  // Returning an array of the cowfile names as strings
+  // Filter denies access to a handful of apparently broken cowfiles that
+  // I wasn't able to troubleshoot, as well as any cows that are over
+  // 1400 characters after adding a basic message.
   return cows.map((cowfile) => cowfile.split('.')[0])
     .filter((name) => ((name !== 'zen-noh-milk') && (name !== 'yasuna_08') && (name !== 'ibm')) && (`\`\`\`${cowsay.say({ text: 'Moo', cow: name })}\`\`\``.length < 1400));
 }
 
 const cowList = getCowList();
+const charLimit = 250;
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('cowsay')
     .setDescription('Enter a short message to generate an ASCII art cow with a speech bubble')
     .addStringOption((option) => option.setName('message')
-      .setDescription('A message to send via cow.'))
+      .setDescription('A message to send via cow.')
+      .setMaxLength(charLimit))
     .addStringOption((option) => option.setName('cow')
       .setDescription('The cow to use')
       .setAutocomplete(true))
@@ -44,7 +50,6 @@ module.exports = {
     return list;
   },
   async execute(interaction) {
-    const charLimit = 250;
     const choices = await cowList;
     const message = interaction.options.getString('message');
     const help = interaction.options.getString('help');
@@ -52,10 +57,15 @@ module.exports = {
     const cow = choices.includes(interaction.options.getString('cow')) ? interaction.options.getString('cow') : 'default';
     if (message) {
       try {
-        if (message.length > charLimit) {
-          await interaction.reply({ content: `Your message is ${message.length} characters long, which is WAAAY too many characters for me to handle at once when I'm making cool ASCII art. Please enter a message under ${charLimit} characters.`, ephemeral: true });
-          return;
-        }
+        // // This remains from my attempt to dynamically verify a legal character length.
+        // // I decided it was a bad idea.
+        // if (message.length > charLimit) {
+        //   await interaction.reply({ content: `Your message is ${message.length}`
+        // + ` characters long, which is WAAAY too many characters for me to handle at `
+        // + `once when I'm making cool ASCII art. Please enter a message under `
+        // + `${charLimit} characters.`, ephemeral: true });
+        //   return;
+        // }
         const moo = cowsay.say({
           text: message,
           f: cow,
