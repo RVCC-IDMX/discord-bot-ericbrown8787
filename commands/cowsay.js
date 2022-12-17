@@ -11,18 +11,33 @@ async function getCowList() {
     }
     return names;
   }
-
+  // List of prohibited cows
+  function checkProhibited(string) {
+    const exclusionList = [
+      'zen-noh-milk',
+      'yasuna_08',
+      'ibm',
+      'beavis',
+    ];
+    let stillTrue = true;
+    exclusionList.forEach((item) => {
+      if (item === string) {
+        stillTrue = false;
+      }
+    });
+    return stillTrue;
+  }
   const cows = await cowsay.list(callback);
   // Returning an array of the cowfile names as strings
   // Filter denies access to a handful of apparently broken cowfiles that
   // I wasn't able to troubleshoot, as well as any cows that are over
   // 1400 characters after adding a basic message.
   return cows.map((cowfile) => cowfile.split('.')[0])
-    .filter((name) => ((name !== 'zen-noh-milk') && (name !== 'yasuna_08') && (name !== 'ibm')) && (`\`\`\`${cowsay.say({ text: 'Moo', cow: name })}\`\`\``.length < 1400));
+    .filter((name) => (checkProhibited(name) && (`\`\`\`${cowsay.say({ text: 'Moo', cow: name })}\`\`\``.length < 1400)));
 }
-
+// note: cowList evaluates to a promise
 const cowList = getCowList();
-const charLimit = 250;
+const charLimit = 500;
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -53,30 +68,32 @@ module.exports = {
     const choices = await cowList;
     const message = interaction.options.getString('message');
     const help = interaction.options.getString('help');
-    // Confirming that the user isn't entering a prohibited or invalid cow.
-    const cow = choices.includes(interaction.options.getString('cow')) ? interaction.options.getString('cow') : 'default';
+    const cowFile = interaction.options.getString('cow');
+    if (!choices.includes(cowFile)) {
+      await interaction.reply({ content: 'It looks like the cow you entered is invalid. To see a list of valid cows you can use, type /cowsay help', ephemeral: true });
+      return;
+    }
+    const cow = cowFile || 'default';
     if (message) {
       try {
-        // // This remains from my attempt to dynamically verify a legal character length.
-        // // I decided it was a bad idea.
-        // if (message.length > charLimit) {
-        //   await interaction.reply({ content: `Your message is ${message.length}`
-        // + ` characters long, which is WAAAY too many characters for me to handle at `
-        // + `once when I'm making cool ASCII art. Please enter a message under `
-        // + `${charLimit} characters.`, ephemeral: true });
-        //   return;
-        // }
         const moo = cowsay.say({
           text: message,
           f: cow,
         });
 
         // Sanitizing the cowsay output and fencing it off for Discord's Markdown rendering
-        const formattedMoo = `\`\`\`${moo.replaceAll('`', '\'')}\`\`\``;
+        const delimiter = '\n';
+        const cleanLine = '';
+        const sanitizedMoo = moo.replaceAll('`', '\'').split(delimiter);
+        sanitizedMoo[0] = cleanLine;
+        sanitizedMoo[2] = cleanLine;
+        const formattedMoo = `\`\`\`\n${sanitizedMoo.join(delimiter)}\`\`\``;
 
         await interaction.reply(formattedMoo);
       } catch (error) {
-        await interaction.reply({ content: 'It looks like you\'ve entered an invalid cow. ', ephemeral: true });
+        // Handling any other errors from parts of Cowsay I couldn't personally audit
+        console.error(error);
+        await interaction.reply({ content: `It looks like there was an error processing your request: \n${error}`, ephemeral: true });
       }
     } else if (help) {
       const row = new ActionRowBuilder()
