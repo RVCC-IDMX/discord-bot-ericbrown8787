@@ -3,6 +3,13 @@ const {
 } = require('discord.js');
 const cowsay = require('cowsay');
 
+const charLimit = 500;
+const generateDummyText = () => {
+  let dummyText = '';
+  for (let i = 0; i < charLimit; i += 1) { dummyText += 'A'; }
+  return dummyText;
+};
+
 async function getCowList() {
   function callback(error, names) {
     if (error) {
@@ -11,21 +18,30 @@ async function getCowList() {
     }
     return names;
   }
-  // List of prohibited cows
+  // Prohibited cows
   function checkProhibited(string) {
-    const exclusionList = [
-      'zen-noh-milk',
-      'yasuna_08',
-      'ibm',
-      'beavis',
-    ];
-    let stillTrue = true;
-    exclusionList.forEach((item) => {
-      if (item === string) {
+    try {
+      const exclusionList = [
+        'zen-noh-milk',
+        'yasuna_08',
+        'ibm',
+        'beavis',
+      ];
+      let stillTrue = true;
+
+      exclusionList.forEach((item) => {
+        if (item === string) {
+          stillTrue = false;
+        }
+      });
+
+      if (stillTrue && (`\`\`\`${cowsay.say({ text: generateDummyText(), f: string })}\`\`\``).length > 1900) {
         stillTrue = false;
       }
-    });
-    return stillTrue;
+      return stillTrue;
+    } catch {
+      return false;
+    }
   }
   const cows = await cowsay.list(callback);
   // Returning an array of the cowfile names as strings
@@ -33,11 +49,10 @@ async function getCowList() {
   // I wasn't able to troubleshoot, as well as any cows that are over
   // 1400 characters after adding a basic message.
   return cows.map((cowfile) => cowfile.split('.')[0])
-    .filter((name) => (checkProhibited(name) && (`\`\`\`${cowsay.say({ text: 'Moo', cow: name })}\`\`\``.length < 1400)));
+    .filter((name) => checkProhibited(name));
 }
 // note: cowList evaluates to a promise
 const cowList = getCowList();
-const charLimit = 500;
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -69,7 +84,7 @@ module.exports = {
     const message = interaction.options.getString('message');
     const help = interaction.options.getString('help');
     const cowFile = interaction.options.getString('cow');
-    if (!choices.includes(cowFile)) {
+    if (cowFile && !choices.includes(cowFile)) {
       await interaction.reply({ content: 'It looks like the cow you entered is invalid. To see a list of valid cows you can use, type /cowsay help', ephemeral: true });
       return;
     }
